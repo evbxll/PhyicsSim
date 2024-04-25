@@ -8,7 +8,7 @@ import Footer from '../components/Footer';
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
-      <div className="flex flex-col min-h-screen"> {/* This ensures the footer is at the bottom */}
+      <div className="flex flex-col min-h-screen" style={{ width: '100vw', height: '100vh' }}> {/* This ensures the footer is at the bottom */}
         <Header />
         <main className="flex-grow">
           <Component {...pageProps} />

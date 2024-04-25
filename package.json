@@ -21,6 +21,7 @@
     "@fortawesome/free-brands-svg-icons": "^5.15.4",
     "@fortawesome/free-solid-svg-icons": "^5.15.4",
     "@fortawesome/react-fontawesome": "^0.1.15",
+    "@react-three/drei": "^9.105.4",
     "autoprefixer": "^10.4.19",
     "eslint-config-next": "^14.2.1",
     "next": "^14.2.1",
@@ -32,6 +33,7 @@
   },
   "devDependencies": {
     "@next/eslint-plugin-next": "^14.2.1",
+    "@react-three/fiber": "^8.16.2",
     "@types/react": "18.0.0",
     "@types/three": "^0.135.0",
     "eslint": "^8.57.0",
