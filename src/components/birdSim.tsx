@@ -1,65 +1,185 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useFrame, useThree } from "@react-three/fiber";
-import { MapControls, OrthographicCamera, PerspectiveCamera } from "@react-three/drei";
+import { MapControls, OrthographicCamera, PerspectiveCamera, Box } from "@react-three/drei";
 import * as THREE from "three";
+import BoundsBox from './BoundsBox';
+import assert from 'assert'
+import { Bounds } from './Sky';
 
-function BirdSim() {
-    const birdInstances = useRef<THREE.Matrix4[]>([]);
+interface Bird {
+    position: THREE.Vector3;
+    velocity: THREE.Vector3;
+    family: number;
+}
+
+function BirdSim({ bounds }: { bounds: Bounds }) {
+    
+    const controlsRef = useRef<any>(null);
+    const cameraRef = useRef<any>(null);
+    const birdInstances = useRef<Bird[]>([]);
     const birdMeshRef = useRef<THREE.InstancedMesh>(null);
-    const { camera } = useThree();
-    const boundingBox = useRef<THREE.Box3>(new THREE.Box3());
+
+    const geomtery = new THREE.SphereBufferGeometry(1, 32, 32);
+    const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+
+    const [birdsCount, setBirdsCount] = useState(10);
+
+    
+
+    
+
+
+    function getMatrixFromVector(vector: THREE.Vector3): THREE.Matrix4 {
+        const matrix = new THREE.Matrix4();
+        matrix.setPosition(vector);
+        return matrix;
+    }
+
+    function clipPosition(bird: Bird): void {
+        const { position, velocity } = bird;
+
+        // Clip position if it's out of bounds
+        if (Math.abs(position.x) > bounds.boundX) {
+            position.x = THREE.MathUtils.clamp(position.x, -bounds.boundX, bounds.boundX); // Clamp position to stay within bounds
+            velocity.x *= -1; // Reverse velocity to point back into bounds
+        }
+        if (Math.abs(position.y) > bounds.boundY) {
+            position.y = THREE.MathUtils.clamp(position.y, -bounds.boundY, bounds.boundY); // Clamp position to stay within bounds
+            velocity.y *= -1;
+        }
+        if (Math.abs(position.z) > bounds.boundZ) {
+            position.z = THREE.MathUtils.clamp(position.z, -bounds.boundZ, bounds.boundZ); // Clamp position to stay within bounds
+            velocity.z *= -1;
+        }
+    }
+
 
     useEffect(() => {
-        const count = 5; // Number of birds
-        const range = 25; // Range within which birds are positioned
+        if (birdMeshRef.current) {
 
-        for (let i = 0; i < count; i++) {
-            const matrix = new THREE.Matrix4();
-            matrix.setPosition(
-                Math.random() * range * 2 - range, // Random x position within range
-                Math.random() * range * 2 - range, // Random y position within range
-                Math.random() * range * 2 - range  // Random z position within range
-            );
-            birdInstances.current.push(matrix);
+            for (let i = 0; i < birdsCount; i++) {
+                const pos = new THREE.Vector3(Math.random(), i, 0);
+                const bird: Bird = {
+                    position: pos,
+                    velocity: new THREE.Vector3(Math.random(), Math.random(), 0).normalize(),
+                    family: 0
+                }
+
+                const matrix = getMatrixFromVector(pos);
+                birdInstances.current.push(bird);
+                birdMeshRef.current.setMatrixAt(i, matrix);
+                birdMeshRef.current.setColorAt(i, new THREE.Color('red'));
+            }
+            birdMeshRef.current.instanceMatrix.needsUpdate = true;
         }
     }, []);
 
-    useFrame(() => {
+    const updateBirds = () => {
+        const separationDistance = 10;
+        const attractionDistance = 1000;
+        const cohesionDistance = 1000;
+        const seperationStrength = (distance: number) => { return 1.0 / (distance + 1) };
+        const attractionStrength = (distance: number) => { return distance };
+        const cohesionStrength = (distance: number) => { return distance };
         if (birdMeshRef.current) {
-            birdMeshRef.current.instanceMatrix.needsUpdate = true;
+            for (const [i, bird] of birdInstances.current.entries()) {
+                let separation = new THREE.Vector3();
+                let alignment = new THREE.Vector3();
+                let cohesion = new THREE.Vector3();
+
+                // const velocity = new THREE.Vector3(
+                //     2*(Math.random() - 0.5),
+                //     2*(Math.random() - 0.5),
+                //     0
+                // )
+
+                // bird.velocity.add(velocity)
+
+
+                if (isNaN(bird.position.x) || isNaN(bird.position.y) || isNaN(bird.position.z)) {
+                    throw new Error('RIP')
+                }
+
+                // for (const [j, neighbor] of birdInstances.current.entries()) {
+                //     if(i===j || Math.random() < 0.4) continue;
+
+                //     const vectorToNeighbor = bird.position.clone().sub(neighbor.position);
+                //     const distanceLength = vectorToNeighbor.length();
+
+                //     // Separation: Birds try to maintain a minimum distance from each other
+                //     if (distanceLength < separationDistance) {
+                //         separation.sub(vectorToNeighbor.normalize())//.multiplyScalar(seperationStrength(distanceLength)));
+                //     }
+
+                //     // Alignment: Birds try to align their velocities with neighboring birds
+                //     if (distanceLength < attractionDistance) {
+                //         alignment.add(neighbor.velocity.multiplyScalar(attractionStrength(distanceLength)));
+                //     }
+
+                //     // Cohesion: Birds try to move towards the center of mass of neighboring birds
+                //     if (distanceLength < cohesionDistance) {
+                //         cohesion.add(vectorToNeighbor.multiplyScalar(cohesionStrength(distanceLength)));
+                //     }
+
+
+                // }
+                // if(i===0){console.log(separation, alignment, cohesion)}
+
+
+                // Apply alignment rule
+                alignment.divideScalar(birdsCount - 1).sub(bird.velocity);
+
+                // Apply cohesion rule
+                cohesion.divideScalar(birdsCount - 1).sub(bird.position);
+
+                // Update velocity based on rules
+                // bird.velocity.sub(separation).normalize().multiplyScalar(6);//.add(alignment).add(cohesion).normalize().multiplyScalar(5);
+                // console.log(separation, alignment, cohesion)
+                bird.position.add(bird.velocity);
+
+                clipPosition(bird);
+
+                birdMeshRef.current.setMatrixAt(i, getMatrixFromVector(bird.position));
+            }
+
+            birdMeshRef.current.geometry.attributes.position.needsUpdate = true;
         }
-        birdInstances.current.forEach((matrix, index) => {
-            const position = new THREE.Vector3();
-            matrix.decompose(position, new THREE.Quaternion(), new THREE.Vector3());
-            position.addScaledVector(new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5), 0.2);
-            matrix.setPosition(position.x, position.y, position.z);
-        });
+    }
+    useFrame(() => {
+        if (birdMeshRef.current)
+            birdMeshRef.current.geometry.attributes.position.needsUpdate = true;
+    })
 
-        // Recalculate bounding box based on bird positions
-        boundingBox.current.makeEmpty(); // Reset bounding box
-        birdInstances.current.forEach((matrix) => {
-            const position = new THREE.Vector3();
-            matrix.decompose(position, new THREE.Quaternion(), new THREE.Vector3());
-            boundingBox.current.expandByPoint(position); // Expand bounding box to include bird position
-        });
+    
 
-        // Calculate camera position based on bounding box
-        const center = new THREE.Vector3();
-        boundingBox.current.getCenter(center);
-        const size = new THREE.Vector3();
-        boundingBox.current.getSize(size);
-        const distance = Math.max(size.x, size.y, size.z) * 2; // Increase distance to ensure all birds are visible
-        camera.position.set(center.x, center.y + distance, center.z); // Set camera to overhead view
-        camera.lookAt(center.x, center.y, center.z); // Look at the center of the bounding box
-    });
+    useEffect(() => {
+        const intervalId = setInterval(updateBirds, 1000 / 30);
+        return () => clearInterval(intervalId); // Cleanup function to clear the interval when the component unmounts or the dependency array changes
+    }, []);
 
     return (
         <>
-            <OrthographicCamera makeDefault position={[0, 0, 100]} zoom={10} />
-            <instancedMesh ref={birdMeshRef}>
-                <sphereBufferGeometry args={[60, 16, 16]} />
-                <meshBasicMaterial color="red" />
-            </instancedMesh>
+            <OrthographicCamera
+                makeDefault
+                ref={cameraRef}
+                position={[0, 0, 100]}
+            />
+            <MapControls
+                enableRotate={false}
+                zoomToCursor={true}
+                zoomSpeed={1}
+                enableDamping={false}
+                screenSpacePanning={true}
+                ref={controlsRef}
+                minZoom={1}
+                maxZoom={50}
+            />
+            <instancedMesh
+                ref={birdMeshRef}
+                args={[geomtery, material, birdsCount]}
+                frustumCulled={true}
+            />
+            <BoundsBox bounds={bounds} />
         </>
     );
 }
