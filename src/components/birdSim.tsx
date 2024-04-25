@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState,useMemo, useRef } from 'react';
 import { useFrame, useThree } from "@react-three/fiber";
 import { MapControls, OrthographicCamera, PerspectiveCamera, Box } from "@react-three/drei";
 import * as THREE from "three";
@@ -11,7 +11,7 @@ interface Bird {
     family: number;
 }
 
-function BirdSim() {
+function BirdSim({ bounds }: { bounds: Bounds }) {
     
     const controlsRef = useRef<any>(null);
     const cameraRef = useRef<any>(null);
@@ -21,7 +21,7 @@ function BirdSim() {
     const geomtery = new THREE.SphereBufferGeometry(1, 32, 32);
     const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 
-    const [birdsCount, setBirdsCount] = useState(10);
+    const [birdsCount, setBirdsCount] = useState(1000);
 
     
 
@@ -34,23 +34,23 @@ function BirdSim() {
         return matrix;
     }
 
-    // function clipPosition(bird: Bird): void {
-    //     const { position, velocity } = bird;
+    function clipPosition(bird: Bird): void {
+        const { position, velocity } = bird;
 
-    //     // Clip position if it's out of bounds
-    //     if (Math.abs(position.x) > bounds.boundX) {
-    //         position.x = THREE.MathUtils.clamp(position.x, -bounds.boundX, bounds.boundX); // Clamp position to stay within bounds
-    //         velocity.x *= -1; // Reverse velocity to point back into bounds
-    //     }
-    //     if (Math.abs(position.y) > bounds.boundY) {
-    //         position.y = THREE.MathUtils.clamp(position.y, -bounds.boundY, bounds.boundY); // Clamp position to stay within bounds
-    //         velocity.y *= -1;
-    //     }
-    //     if (Math.abs(position.z) > bounds.boundZ) {
-    //         position.z = THREE.MathUtils.clamp(position.z, -bounds.boundZ, bounds.boundZ); // Clamp position to stay within bounds
-    //         velocity.z *= -1;
-    //     }
-    // }
+        // Clip position if it's out of bounds
+        if (Math.abs(position.x) >= bounds.boundX) {
+            position.x = THREE.MathUtils.clamp(position.x, -bounds.boundX, bounds.boundX); // Clamp position to stay within bounds
+            velocity.x *= -1; // Reverse velocity to point back into bounds
+        }
+        if (Math.abs(position.y) >= bounds.boundY) {
+            position.y = THREE.MathUtils.clamp(position.y, -bounds.boundY, bounds.boundY); // Clamp position to stay within bounds
+            velocity.y *= -1;
+        }
+        if (Math.abs(position.z) >= bounds.boundZ) {
+            position.z = THREE.MathUtils.clamp(position.z, -bounds.boundZ, bounds.boundZ); // Clamp position to stay within bounds
+            velocity.z *= -1;
+        }
+    }
 
 
     useEffect(() => {
@@ -87,13 +87,13 @@ function BirdSim() {
                 let alignment = new THREE.Vector3();
                 let cohesion = new THREE.Vector3();
 
-                // const velocity = new THREE.Vector3(
-                //     2*(Math.random() - 0.5),
-                //     2*(Math.random() - 0.5),
-                //     0
-                // )
+                const velocity = new THREE.Vector3(
+                    2*(Math.random() - 0.5),
+                    2*(Math.random() - 0.5),
+                    0
+                )
 
-                // bird.velocity.add(velocity)
+                bird.velocity.add(velocity)
 
 
                 if (isNaN(bird.position.x) || isNaN(bird.position.y) || isNaN(bird.position.z)) {
@@ -137,7 +137,7 @@ function BirdSim() {
                 // // console.log(separation, alignment, cohesion)
                 bird.position.add(bird.velocity);
 
-                // clipPosition(bird);
+                clipPosition(bird);
 
                 birdMeshRef.current.setMatrixAt(i, getMatrixFromVector(bird.position));
             }
@@ -159,7 +159,7 @@ function BirdSim() {
     
 
     useEffect(() => {
-        const intervalId = setInterval(updateBirds, 1000);
+        const intervalId = setInterval(updateBirds, 1000/20);
         return () => clearInterval(intervalId); // Cleanup function to clear the interval when the component unmounts or the dependency array changes
     }, []);
 
@@ -190,4 +190,4 @@ function BirdSim() {
     );
 }
 
-export default BirdSim;
+export default React.memo(BirdSim);

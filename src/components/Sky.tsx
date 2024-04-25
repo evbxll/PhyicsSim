@@ -36,17 +36,17 @@ const Sky = () => {
   return (
     <>
       <Canvas style={{ width: '100%', height: '100%' }}>
-        <BirdSim />
-        {/* <BoundsBox bounds={bounds} /> */}
+        <BirdSim  bounds={bounds}/>
+        <BoundsBox bounds={bounds} />
         <color attach="background" args={['black']} />
       </Canvas>
-      {/* <SettingsMenu
+      <SettingsMenu
         updateBounds={updateBounds}
         bounds={bounds}
         showSettingsMenu={showSettingsMenu}
         setShowSettingsMenu={setShowSettingsMenu}
 
-      /> */}
+      />
     </>
   );
 }
