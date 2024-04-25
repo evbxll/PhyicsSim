@@ -1,5 +1,7 @@
 import BirdSim from "@/components/birdSim";
 import { Canvas } from "@react-three/fiber";
+
+import BoundsBox from './BoundsBox';
 import React, { useEffect, useState, useRef } from 'react';
 
 import SettingsMenu from './SettingsMenu';
@@ -12,39 +14,39 @@ export interface Bounds {
 
 const Sky = () => {
   const [showSettingsMenu, setShowSettingsMenu] = useState(true);
-  const boundsRef = useRef<Bounds>({
+  const [bounds, setBounds] = useState<Bounds>({
     boundX: 50,
     boundY: 50,
     boundZ: 50
   });
 
 
-  const updateBounds = () => {
+  const updateBounds = (x?: number, y?: number, z?: number): void => {
+    
+    const newBounds : Bounds = ({
+      boundX: x ? x : bounds.boundX,
+      boundY: y ? y : bounds.boundY,
+      boundZ: z ? z : bounds.boundZ,
 
+    })
+    console.log(newBounds)
+    setBounds(newBounds)
   };
-
-  useEffect(() => {
-    updateBounds(); // Update bounds initially
-    window.addEventListener('resize', updateBounds); // Update bounds on window resize
-
-    return () => {
-      window.removeEventListener('resize', updateBounds); // Cleanup event listener
-    };
-  }, []);
 
   return (
     <>
       <Canvas style={{ width: '100%', height: '100%' }}>
-        <BirdSim bounds={boundsRef.current}/>
+        <BirdSim />
+        {/* <BoundsBox bounds={bounds} /> */}
         <color attach="background" args={['black']} />
       </Canvas>
-      <SettingsMenu
+      {/* <SettingsMenu
         updateBounds={updateBounds}
-        bounds={boundsRef.current}
+        bounds={bounds}
         showSettingsMenu={showSettingsMenu}
         setShowSettingsMenu={setShowSettingsMenu}
 
-      />
+      /> */}
     </>
   );
 }

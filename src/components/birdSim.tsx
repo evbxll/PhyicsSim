@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { useFrame, useThree } from "@react-three/fiber";
 import { MapControls, OrthographicCamera, PerspectiveCamera, Box } from "@react-three/drei";
 import * as THREE from "three";
-import BoundsBox from './BoundsBox';
 import assert from 'assert'
 import { Bounds } from './Sky';
 
@@ -12,7 +11,7 @@ interface Bird {
     family: number;
 }
 
-function BirdSim({ bounds }: { bounds: Bounds }) {
+function BirdSim() {
     
     const controlsRef = useRef<any>(null);
     const cameraRef = useRef<any>(null);
@@ -35,23 +34,23 @@ function BirdSim({ bounds }: { bounds: Bounds }) {
         return matrix;
     }
 
-    function clipPosition(bird: Bird): void {
-        const { position, velocity } = bird;
+    // function clipPosition(bird: Bird): void {
+    //     const { position, velocity } = bird;
 
-        // Clip position if it's out of bounds
-        if (Math.abs(position.x) > bounds.boundX) {
-            position.x = THREE.MathUtils.clamp(position.x, -bounds.boundX, bounds.boundX); // Clamp position to stay within bounds
-            velocity.x *= -1; // Reverse velocity to point back into bounds
-        }
-        if (Math.abs(position.y) > bounds.boundY) {
-            position.y = THREE.MathUtils.clamp(position.y, -bounds.boundY, bounds.boundY); // Clamp position to stay within bounds
-            velocity.y *= -1;
-        }
-        if (Math.abs(position.z) > bounds.boundZ) {
-            position.z = THREE.MathUtils.clamp(position.z, -bounds.boundZ, bounds.boundZ); // Clamp position to stay within bounds
-            velocity.z *= -1;
-        }
-    }
+    //     // Clip position if it's out of bounds
+    //     if (Math.abs(position.x) > bounds.boundX) {
+    //         position.x = THREE.MathUtils.clamp(position.x, -bounds.boundX, bounds.boundX); // Clamp position to stay within bounds
+    //         velocity.x *= -1; // Reverse velocity to point back into bounds
+    //     }
+    //     if (Math.abs(position.y) > bounds.boundY) {
+    //         position.y = THREE.MathUtils.clamp(position.y, -bounds.boundY, bounds.boundY); // Clamp position to stay within bounds
+    //         velocity.y *= -1;
+    //     }
+    //     if (Math.abs(position.z) > bounds.boundZ) {
+    //         position.z = THREE.MathUtils.clamp(position.z, -bounds.boundZ, bounds.boundZ); // Clamp position to stay within bounds
+    //         velocity.z *= -1;
+    //     }
+    // }
 
 
     useEffect(() => {
@@ -82,6 +81,7 @@ function BirdSim({ bounds }: { bounds: Bounds }) {
         const attractionStrength = (distance: number) => { return distance };
         const cohesionStrength = (distance: number) => { return distance };
         if (birdMeshRef.current) {
+            // console.log('h')
             for (const [i, bird] of birdInstances.current.entries()) {
                 let separation = new THREE.Vector3();
                 let alignment = new THREE.Vector3();
@@ -126,34 +126,40 @@ function BirdSim({ bounds }: { bounds: Bounds }) {
                 // if(i===0){console.log(separation, alignment, cohesion)}
 
 
-                // Apply alignment rule
-                alignment.divideScalar(birdsCount - 1).sub(bird.velocity);
+                // // Apply alignment rule
+                // alignment.divideScalar(birdsCount - 1).sub(bird.velocity);
 
-                // Apply cohesion rule
-                cohesion.divideScalar(birdsCount - 1).sub(bird.position);
+                // // Apply cohesion rule
+                // cohesion.divideScalar(birdsCount - 1).sub(bird.position);
 
-                // Update velocity based on rules
-                // bird.velocity.sub(separation).normalize().multiplyScalar(6);//.add(alignment).add(cohesion).normalize().multiplyScalar(5);
-                // console.log(separation, alignment, cohesion)
+                // // Update velocity based on rules
+                // // bird.velocity.sub(separation).normalize().multiplyScalar(6);//.add(alignment).add(cohesion).normalize().multiplyScalar(5);
+                // // console.log(separation, alignment, cohesion)
                 bird.position.add(bird.velocity);
 
-                clipPosition(bird);
+                // clipPosition(bird);
 
                 birdMeshRef.current.setMatrixAt(i, getMatrixFromVector(bird.position));
             }
 
-            birdMeshRef.current.geometry.attributes.position.needsUpdate = true;
+
+            //Very important this stays this way, doesnt update otherwise
+            birdMeshRef.current.instanceMatrix.needsUpdate = true;
+            console.log(birdInstances.current[0])
         }
     }
-    useFrame(() => {
-        if (birdMeshRef.current)
-            birdMeshRef.current.geometry.attributes.position.needsUpdate = true;
-    })
+
+
+    // useFrame(() => {
+    //     if (birdMeshRef.current)
+    //         birdMeshRef.current.geometry.attributes.position.needsUpdate = true;
+    //     // console.log('fr')
+    // })
 
     
 
     useEffect(() => {
-        const intervalId = setInterval(updateBirds, 1000 / 30);
+        const intervalId = setInterval(updateBirds, 1000);
         return () => clearInterval(intervalId); // Cleanup function to clear the interval when the component unmounts or the dependency array changes
     }, []);
 
@@ -177,9 +183,9 @@ function BirdSim({ bounds }: { bounds: Bounds }) {
             <instancedMesh
                 ref={birdMeshRef}
                 args={[geomtery, material, birdsCount]}
-                frustumCulled={true}
+                frustumCulled={false}
             />
-            <BoundsBox bounds={bounds} />
+            
         </>
     );
 }

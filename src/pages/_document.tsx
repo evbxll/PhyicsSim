@@ -14,6 +14,8 @@ class MyDocument extends Document {
                         rel="stylesheet"
                         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
                     />
+                    <script type="text/javascript" src="https://unpkg.com/default-passive-events"></script>
+
                 </Head>
                 <body>
                     <Main />

@@ -16,6 +16,7 @@ const SettingsMenu: React.FC<{
   showSettingsMenu,
   setShowSettingsMenu
 }) => {
+    let t = 0;
     return (
       <>
         {!showSettingsMenu && (
@@ -27,7 +28,7 @@ const SettingsMenu: React.FC<{
           </button>
         )}
         {showSettingsMenu && (
-          <Draggable bounds="parent">
+          <Draggable handle=".drag-handle" bounds="parent">
             <div className="absolute top-10 right-10 bg-gray-200 bg-opacity-80 p-2 padding-top-0 rounded-md shadow-md font-sans">
               <div className="drag-handle w-full h-12 flex justify-center items-center cursor-move">
                 <FontAwesomeIcon icon={faGripHorizontal} className="text-gray-600" />
@@ -43,11 +44,11 @@ const SettingsMenu: React.FC<{
               <h2 className="text-lg font-semibold mb-2">Settings Menu</h2>
               <div className="mb-2">
                 <label className="block text-sm mb-1">Bounding Width: <span className="text-gray-500 ml-2">{bounds.boundX}</span></label>
-                <input type="range" min="0" max="10" value={bounds.boundX} onChange={(e) => updateBounds(parseInt(e.target.value))} className="w-full appearance-none bg-gray-300 rounded-md h-5 transition-opacity duration-200 opacity-70 hover:opacity-100" />
+                <input type="range" min="0" max="1000" value={bounds.boundX} onChange={(e) => updateBounds(parseInt(e.target.value))} className="w-full appearance-none bg-gray-300 rounded-md h-5 transition-opacity duration-200 opacity-70 hover:opacity-100" />
               </div>
               <div className="mb-2">
                 <label className="block text-sm mb-1">Bounding Height: <span className="text-gray-500 ml-2">{bounds.boundY}</span></label>
-                <input type="range" min="10" max="500" value={bounds.boundY} onChange={(e) => updateBounds(undefined, parseInt(e.target.value))} className="w-full appearance-none bg-gray-300 rounded-md h-5 transition-opacity duration-200 opacity-70 hover:opacity-100" />
+                <input type="range" min="10" max="1000" value={bounds.boundY} onChange={(e) => updateBounds(undefined, parseInt(e.target.value))} className="w-full appearance-none bg-gray-300 rounded-md h-5 transition-opacity duration-200 opacity-70 hover:opacity-100" />
               </div>
               {/* <div className="mb-2">
                 <label className="block text-sm mb-1">Update Delay (ms): <span className="text-gray-500 ml-2">{refreshDelay}</span></label>
