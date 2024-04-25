@@ -1,0 +1,47 @@
+{
+  "name": "evbxll-BirdBoidSim",
+  "version": "0.1.0",
+  "homepage": "https://evbxll.github.io",
+  "private": true,
+  "scripts": {
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build",
+    "postdeploy": "echo 'Deployment successful!'",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint --ext .tsx --ignore-path .gitignore ."
+  },
+  "main": "index.tsx",
+  "author": "Evan Michael Bell (evbxll)",
+  "license": "MIT",
+  "repository": "https://github.com/evbxll/BirdBoidSim",
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^1.2.35",
+    "@fortawesome/free-brands-svg-icons": "^5.15.4",
+    "@fortawesome/free-solid-svg-icons": "^5.15.4",
+    "@fortawesome/react-fontawesome": "^0.1.15",
+    "autoprefixer": "^10.4.19",
+    "eslint-config-next": "^14.2.1",
+    "next": "^14.2.1",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "tailwindcss": "^3.0.0",
+    "three": "^0.134.0",
+    "ts-jsx-draggable": "^1.0.2"
+  },
+  "devDependencies": {
+    "@next/eslint-plugin-next": "^14.2.1",
+    "@types/react": "18.0.0",
+    "@types/three": "^0.135.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "gh-pages": "^3.2.3",
+    "react-draggable": "^4.4.6",
+    "typescript": "^4.5.4",
+    "webpack": "^5.67.0",
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.8.0"
+  }
+}
