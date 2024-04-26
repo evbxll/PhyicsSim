@@ -1,22 +1,99 @@
-import { faGripHorizontal } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import React, { useState } from 'react';
 import Draggable from 'react-draggable';
-import React from 'react';
-import { Html } from '@react-three/drei';
 import { Bounds } from './Sky';
+import Slider, { SliderType } from './Slider';
+
+
+
 
 const SettingsMenu: React.FC<{
+  canvasRef: React.MutableRefObject<any>;
   updateBounds: (x?: number, y?: number, z?: number) => void;
   bounds: Bounds;
   showSettingsMenu: boolean;
-  setShowSettingsMenu: (value: boolean) => void;
+  setShowSettingsMenu: (variable: boolean) => void;
+  fps: number;
+  setFps: (variable: number) => void;
+  birdSize: number;
+  setBirdSize: (variable: number) => void;
+  birdsCount: number;
+  setBirdsCount: (variable: number) => void;
+  birdVelocity: number;
+  setBirdVelocity: (variable: number) => void;
+  recenterCamera: () => void;
 }> = ({
+  canvasRef,
   updateBounds,
   bounds,
   showSettingsMenu,
-  setShowSettingsMenu
+  setShowSettingsMenu,
+  fps,
+  setFps,
+  birdSize,
+  setBirdSize,
+  birdsCount,
+  setBirdsCount,
+  birdVelocity,
+  setBirdVelocity,
+  recenterCamera
 }) => {
-    let t = 0;
+
+    let maxWidth = 1000;
+    let maxHeight = 1000;
+    const rect = canvasRef.current?.parentElement?.getBoundingClientRect();
+    if (rect) {
+      maxWidth = rect.width;
+      maxHeight = rect.height;
+    }
+
+    const sliders: SliderType[] = [
+      {
+        name: "Bounding Width",
+        variable: bounds.boundX,
+        min: 50,
+        max: maxWidth / 2,
+        multiplier: 2,
+        onChange: (value) => updateBounds(value),
+      },
+      {
+        name: 'Bounding Height',
+        min: 50,
+        max: maxHeight / 2,
+        variable: bounds.boundY,
+        multiplier: 2,
+        onChange: (value) => updateBounds(undefined, value)
+      },
+      {
+        name: 'FPS',
+        min: 0.5,
+        max: 100,
+        variable: fps,
+        onChange: (value) => setFps(value)
+      },
+      {
+        name: 'Bird Size',
+        min: 1,
+        max: 10,
+        variable: birdSize,
+        onChange: (value) => setBirdSize(value)
+      },
+      {
+        name: 'Birds Count',
+        min: 1,
+        max: 500,
+        variable: birdsCount,
+        onChange: (value) => setBirdsCount(value)
+      },
+      {
+        name: 'Bird Velocity',
+        min: 0.1,
+        max: 10,
+        variable: birdVelocity,
+        onChange: (value) => setBirdVelocity(value)
+      }
+    ];
+
+
     return (
       <>
         {!showSettingsMenu && (
@@ -29,9 +106,9 @@ const SettingsMenu: React.FC<{
         )}
         {showSettingsMenu && (
           <Draggable handle=".drag-handle" bounds="parent">
-            <div className="absolute top-10 right-10 bg-gray-200 bg-opacity-80 p-2 padding-top-0 rounded-md shadow-md font-sans">
-              <div className="drag-handle w-full h-12 flex justify-center items-center cursor-move">
-                <i className="fa fa-cloud"></i>
+            <div className="absolute top-10 right-10 bg-gray-200 bg-opacity-80 p-4 padding-top-0 rounded-md shadow-md font-sans">
+              <div className="drag-handle w-full h-12 flex justify-center cursor-move">
+                <i className="fa fa-arrows text-3xl" />
               </div>
               <button
                 className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
@@ -42,21 +119,15 @@ const SettingsMenu: React.FC<{
                 </svg>
               </button>
               <h2 className="text-lg font-semibold mb-2">Settings Menu</h2>
-              <div className="mb-2">
-                <label className="block text-sm mb-1">Bounding Width: <span className="text-gray-500 ml-2">{bounds.boundX}</span></label>
-                <input type="range" min="0" max="1000" value={bounds.boundX} onChange={(e) => updateBounds(parseInt(e.target.value))} className="w-full appearance-none bg-gray-300 rounded-md h-5 transition-opacity duration-200 opacity-70 hover:opacity-100" />
-              </div>
-              <div className="mb-2">
-                <label className="block text-sm mb-1">Bounding Height: <span className="text-gray-500 ml-2">{bounds.boundY}</span></label>
-                <input type="range" min="10" max="1000" value={bounds.boundY} onChange={(e) => updateBounds(undefined, parseInt(e.target.value))} className="w-full appearance-none bg-gray-300 rounded-md h-5 transition-opacity duration-200 opacity-70 hover:opacity-100" />
-              </div>
-              {/* <div className="mb-2">
-                <label className="block text-sm mb-1">Update Delay (ms): <span className="text-gray-500 ml-2">{refreshDelay}</span></label>
-                <input type="range" min="0" max="1000" step="10" value={refreshDelay} onChange={(e) => updateRefreshDelay(parseInt(e.target.value))} className="w-full appearance-none bg-gray-300 rounded-md h-5 transition-opacity duration-200 opacity-70 hover:opacity-100" />
-              </div> */}
-              {/* <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md mb-2 w-full" onClick={Reset}>Reset Board</button> */}
+              {sliders.map((sliderInfo, index) => (
+                <Slider
+                  key={index}
+                  SliderInfo={sliderInfo}
+                />
+              ))}
+              <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md mb-2 w-full" onClick={recenterCamera}>Recenter</button>
             </div>
-          </Draggable>
+          </Draggable >
         )}
       </>
     );

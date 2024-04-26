@@ -2,8 +2,6 @@ import React, { useEffect, useState,useMemo, useRef } from 'react';
 import { useFrame, useThree } from "@react-three/fiber";
 import { MapControls, OrthographicCamera, PerspectiveCamera, Box } from "@react-three/drei";
 import * as THREE from "three";
-import assert from 'assert'
-import { Bounds } from './Sky';
 
 interface Bird {
     position: THREE.Vector3;
@@ -13,20 +11,23 @@ interface Bird {
 
 function BirdSim({ 
     boundsRef, 
+    cameraRef,
+    controlsRef,
     fps = 30,
     birdVelocity = 20, 
     birdSize = 1, 
     birdsCount = 100 
 }: { 
     boundsRef: any, 
+    cameraRef: any,
+    controlsRef: any,
     fps: number, 
     birdVelocity: number,
     birdSize: number,
     birdsCount: number
  }) {
 
-    const controlsRef = useRef<any>(null);
-    const cameraRef = useRef<any>(null);
+    
     const birdInstances = useRef<Bird[]>([]);
     const birdMeshRef = useRef<THREE.InstancedMesh>(null);
 
@@ -34,7 +35,8 @@ function BirdSim({
     const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
 
     const velocityScalar: number = useMemo(() => {
-        return fps/birdVelocity;
+        console.log(200*birdVelocity/fps)
+        return 200*birdVelocity/fps;
     },[fps, birdVelocity])
     
 
@@ -49,15 +51,15 @@ function BirdSim({
         const { position, velocity } = bird;
 
         // Clip position if it's out of bounds
-        if (Math.abs(position.x) >= boundsRef.current.boundX) {
+        if (Math.abs(position.x) >= boundsRef.current.boundX - birdSize) {
             position.x = THREE.MathUtils.clamp(position.x, -boundsRef.current.boundX, boundsRef.current.boundX); // Clamp position to stay within bounds
             velocity.x *= -1; // Reverse velocity to point back into bounds
         }
-        if (Math.abs(position.y) >= boundsRef.current.boundY) {
+        if (Math.abs(position.y) >= boundsRef.current.boundY - birdSize) {
             position.y = THREE.MathUtils.clamp(position.y, -boundsRef.current.boundY, boundsRef.current.boundY); // Clamp position to stay within bounds
             velocity.y *= -1;
         }
-        if (Math.abs(position.z) >= boundsRef.current.boundZ) {
+        if (Math.abs(position.z) >= boundsRef.current.boundZ - birdSize) {
             position.z = THREE.MathUtils.clamp(position.z, -boundsRef.current.boundZ, boundsRef.current.boundZ); // Clamp position to stay within bounds
             velocity.z *= -1;
         }
@@ -98,13 +100,13 @@ function BirdSim({
                 let alignment = new THREE.Vector3();
                 let cohesion = new THREE.Vector3();
 
-                const velocity = new THREE.Vector3(
-                    2*(Math.random() - 0.5),
-                    2*(Math.random() - 0.5),
-                    0
-                )
+                // const velocity = new THREE.Vector3(
+                //     2*(Math.random() - 0.5),
+                //     2*(Math.random() - 0.5),
+                //     0
+                // )
 
-                bird.velocity.add(velocity)
+                // bird.velocity.add(velocity)
 
 
                 if (isNaN(bird.position.x) || isNaN(bird.position.y) || isNaN(bird.position.z)) {
@@ -146,6 +148,7 @@ function BirdSim({
                 // // Update velocity based on rules
                 // // bird.velocity.add(separation)//.add(alignment).add(cohesion).normalize().multiplyScalar(velocityScalar);
                 // // console.log(separation, alignment, cohesion)
+                bird.velocity.normalize().multiplyScalar(velocityScalar);
                 bird.position.add(bird.velocity);
 
                 clipPosition(bird);
@@ -158,6 +161,7 @@ function BirdSim({
             birdMeshRef.current.instanceMatrix.needsUpdate = true;
             // console.log(birdInstances.current[0])
         }
+        // console.log('f', birdInstances.current[0].velocity)
     }
 
 
@@ -171,8 +175,9 @@ function BirdSim({
 
     useEffect(() => {
         const intervalId = setInterval(updateBirds, 1000/fps);
+        updateBirds();
         return () => clearInterval(intervalId); // Cleanup function to clear the interval when the component unmounts or the dependency array changes
-    }, []);
+    }, [fps]);
 
     return (
         <>
@@ -185,7 +190,7 @@ function BirdSim({
                 enableRotate={false}
                 zoomToCursor={true}
                 zoomSpeed={1}
-                enableDamping={false}
+                enableDamping={true}
                 screenSpacePanning={true}
                 ref={controlsRef}
                 minZoom={1}
