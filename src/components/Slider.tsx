@@ -25,6 +25,11 @@ export interface SliderType {
    * Multiplier which displays a higher number that it really is
    */
   multiplier?: number;
+
+  /**
+   * optional slider stepsize
+   */
+  stepSize?: number;
   
   /**
    * The function to update this variables
@@ -34,7 +39,7 @@ export interface SliderType {
 }
 
 const Slider : React.FC<{SliderInfo: SliderType}> = ({SliderInfo}) => {
-  const { min, max, variable, multiplier, name, onChange } = SliderInfo;
+  const { min, max, variable, multiplier, stepSize, name, onChange } = SliderInfo;
 
   const handleChange = (event: any) => {
     const value = parseFloat(event.target.value);
@@ -47,10 +52,11 @@ const Slider : React.FC<{SliderInfo: SliderType}> = ({SliderInfo}) => {
       <input
         type="range"
         min={min}
+        step={stepSize ?? 1}
         max={max}
         value={variable}
         onChange={handleChange}
-        className="w-full appearance-none bg-gray-300 rounded-md h-5 transition-opacity duration-200 opacity-70 hover:opacity-100"
+        className="w-full appearance-none bg-gray-300 rounded-md h-5 transition-opacity duration-200 opacity-50 hover:opacity-100"
       />
     </div>
   );

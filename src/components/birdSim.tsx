@@ -1,7 +1,8 @@
-import React, { useEffect, useState,useMemo, useRef } from 'react';
+import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useFrame, useThree } from "@react-three/fiber";
 import { MapControls, OrthographicCamera, PerspectiveCamera, Box } from "@react-three/drei";
 import * as THREE from "three";
+import createBirdGeometry from './birdGeometry';
 
 interface Bird {
     position: THREE.Vector3;
@@ -9,36 +10,42 @@ interface Bird {
     family: number;
 }
 
-function BirdSim({ 
-    boundsRef, 
+function BirdSim({
+    boundsRef,
     cameraRef,
     controlsRef,
     fps = 30,
-    birdVelocity = 20, 
-    birdSize = 1, 
-    birdsCount = 100 
-}: { 
-    boundsRef: any, 
+    birdVelocity = 20,
+    birdSize = 1,
+    birdsCount = 100
+}: {
+    boundsRef: any,
     cameraRef: any,
     controlsRef: any,
-    fps: number, 
+    fps: number,
     birdVelocity: number,
     birdSize: number,
     birdsCount: number
- }) {
+}) {
 
-    
+
+    let framecounter = 0;
+
     const birdInstances = useRef<Bird[]>([]);
     const birdMeshRef = useRef<THREE.InstancedMesh>(null);
 
-    const geomtery = new THREE.SphereGeometry(birdSize, 32, 32);
-    const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const geomtery = useMemo(() => {return createBirdGeometry(birdSize)}, [birdSize]);
+    const material = useMemo(() => {return new THREE.MeshBasicMaterial({ color: 0xff0000 });}, []);
+
+    const velocityScalarRef = useRef(200 * birdVelocity / fps)
 
     const velocityScalar: number = useMemo(() => {
-        console.log(200*birdVelocity/fps)
-        return 200*birdVelocity/fps;
-    },[fps, birdVelocity])
-    
+        const newVelocityScalar = 200 * birdVelocity / fps;
+        velocityScalarRef.current = newVelocityScalar;
+        console.log(birdVelocity, fps, newVelocityScalar)
+        return newVelocityScalar;
+    }, [fps, birdVelocity])
+
 
 
     function getMatrixFromVector(vector: THREE.Vector3): THREE.Matrix4 {
@@ -73,7 +80,7 @@ function BirdSim({
                 const pos = new THREE.Vector3(Math.random(), Math.random(), 0);
                 const bird: Bird = {
                     position: pos,
-                    velocity: new THREE.Vector3(Math.random(), Math.random(), 0).normalize().multiplyScalar(velocityScalar),
+                    velocity: new THREE.Vector3(Math.random(), Math.random(), 0).normalize().multiplyScalar(velocityScalarRef.current),
                     family: 0
                 }
 
@@ -87,6 +94,7 @@ function BirdSim({
     }, []);
 
     const updateBirds = () => {
+        framecounter += 1;
         const separationDistance = 10;
         const attractionDistance = 1000;
         const cohesionDistance = 1000;
@@ -94,7 +102,6 @@ function BirdSim({
         const attractionStrength = (distance: number) => { return distance };
         const cohesionStrength = (distance: number) => { return distance };
         if (birdMeshRef.current) {
-            // console.log('h')
             for (const [i, bird] of birdInstances.current.entries()) {
                 let separation = new THREE.Vector3();
                 let alignment = new THREE.Vector3();
@@ -148,7 +155,7 @@ function BirdSim({
                 // // Update velocity based on rules
                 // // bird.velocity.add(separation)//.add(alignment).add(cohesion).normalize().multiplyScalar(velocityScalar);
                 // // console.log(separation, alignment, cohesion)
-                bird.velocity.normalize().multiplyScalar(velocityScalar);
+                bird.velocity.normalize().multiplyScalar(velocityScalarRef.current);
                 bird.position.add(bird.velocity);
 
                 clipPosition(bird);
@@ -164,6 +171,31 @@ function BirdSim({
         // console.log('f', birdInstances.current[0].velocity)
     }
 
+    useEffect(() => {
+        if (birdMeshRef.current) {
+            const prevLength = birdInstances.current.length;
+
+            for (let i = 0; i < birdsCount; i++) {
+                if (i < prevLength){
+                    const pos = new THREE.Vector3(Math.random(), Math.random(), 0);
+                    const bird: Bird = {
+                        position: pos,
+                        velocity: new THREE.Vector3(Math.random(), Math.random(), 0).normalize().multiplyScalar(velocityScalarRef.current),
+                        family: 0
+                    }
+
+                    const matrix = getMatrixFromVector(pos);
+                    birdInstances.current.push(bird);
+                    birdMeshRef.current.setMatrixAt(i, matrix);
+                }
+                birdMeshRef.current.setColorAt(i, new THREE.Color('red'));
+            }
+            birdMeshRef.current.instanceMatrix.needsUpdate = true;
+        }
+        updateBirds();
+
+    },[birdsCount])
+
 
     // useFrame(() => {
     //     if (birdMeshRef.current)
@@ -171,11 +203,18 @@ function BirdSim({
     //     // console.log('fr')
     // })
 
-    
-
     useEffect(() => {
-        const intervalId = setInterval(updateBirds, 1000/fps);
-        updateBirds();
+        const intervalId = setInterval(updateBirds, 1000 / fps);
+        // updateBirds();
+        return () => clearInterval(intervalId); // Cleanup function to clear the interval when the component unmounts or the dependency array changes
+    }, [fps]);
+
+    function countframes() {
+        // console.log(framecounter)
+        framecounter = 0
+    }
+    useEffect(() => {
+        const intervalId = setInterval(countframes, 1000);
         return () => clearInterval(intervalId); // Cleanup function to clear the interval when the component unmounts or the dependency array changes
     }, [fps]);
 
@@ -201,7 +240,7 @@ function BirdSim({
                 args={[geomtery, material, birdsCount]}
                 frustumCulled={false}
             />
-            
+
         </>
     );
 }

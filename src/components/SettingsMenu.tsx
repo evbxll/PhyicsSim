@@ -21,6 +21,7 @@ const SettingsMenu: React.FC<{
   birdVelocity: number;
   setBirdVelocity: (variable: number) => void;
   recenterCamera: () => void;
+  expandBoundsToWindow: () => void;
 }> = ({
   canvasRef,
   updateBounds,
@@ -35,7 +36,8 @@ const SettingsMenu: React.FC<{
   setBirdsCount,
   birdVelocity,
   setBirdVelocity,
-  recenterCamera
+  recenterCamera,
+  expandBoundsToWindow
 }) => {
 
     let maxWidth = 1000;
@@ -64,9 +66,10 @@ const SettingsMenu: React.FC<{
         onChange: (value) => updateBounds(undefined, value)
       },
       {
-        name: 'FPS',
+        name: 'Frames Per Second (FPS)',
         min: 0.5,
-        max: 100,
+        max: 144,
+        stepSize: 0.5,
         variable: fps,
         onChange: (value) => setFps(value)
       },
@@ -80,7 +83,7 @@ const SettingsMenu: React.FC<{
       {
         name: 'Birds Count',
         min: 1,
-        max: 500,
+        max: 1000,
         variable: birdsCount,
         onChange: (value) => setBirdsCount(value)
       },
@@ -88,6 +91,7 @@ const SettingsMenu: React.FC<{
         name: 'Bird Velocity',
         min: 0.1,
         max: 10,
+        stepSize: 0.1,
         variable: birdVelocity,
         onChange: (value) => setBirdVelocity(value)
       }
@@ -111,7 +115,7 @@ const SettingsMenu: React.FC<{
                 <i className="fa fa-arrows text-3xl" />
               </div>
               <button
-                className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
+                className="absolute top-2 right-2 text-gray-700 hover:text-gray-800"
                 onClick={() => setShowSettingsMenu(false)}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -125,7 +129,9 @@ const SettingsMenu: React.FC<{
                   SliderInfo={sliderInfo}
                 />
               ))}
-              <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md mb-2 w-full" onClick={recenterCamera}>Recenter</button>
+              <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-2 rounded-md mb-1 ml-1 mr-1 " onClick={recenterCamera}>Recenter / Zoom Out</button>
+              <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-2 rounded-md mb-1 ml-1 mr-1" onClick={expandBoundsToWindow}>Expand Bounds</button>
+
             </div>
           </Draggable >
         )}
