@@ -31,7 +31,7 @@ const SettingsMenu: React.FC<{
           <Draggable handle=".drag-handle" bounds="parent">
             <div className="absolute top-10 right-10 bg-gray-200 bg-opacity-80 p-2 padding-top-0 rounded-md shadow-md font-sans">
               <div className="drag-handle w-full h-12 flex justify-center items-center cursor-move">
-                <FontAwesomeIcon icon={faGripHorizontal} className="text-gray-600" />
+                <i className="fa fa-cloud"></i>
               </div>
               <button
                 className="absolute top-2 right-2 text-gray-600 hover:text-gray-800"
