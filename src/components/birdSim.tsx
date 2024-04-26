@@ -37,10 +37,10 @@ function BirdSim({
     const geomtery = useMemo(() => {return createBirdGeometry(birdSize)}, [birdSize]);
     const material = useMemo(() => {return new THREE.MeshBasicMaterial({ color: 0xff0000 });}, []);
 
-    const velocityScalarRef = useRef(200 * birdVelocity / fps)
+    const velocityScalarRef = useRef(20 * birdVelocity / fps)
 
     const velocityScalar: number = useMemo(() => {
-        const newVelocityScalar = 200 * birdVelocity / fps;
+        const newVelocityScalar = 20 * birdVelocity / fps;
         velocityScalarRef.current = newVelocityScalar;
         console.log(birdVelocity, fps, newVelocityScalar)
         return newVelocityScalar;
@@ -48,10 +48,13 @@ function BirdSim({
 
 
 
-    function getMatrixFromVector(vector: THREE.Vector3): THREE.Matrix4 {
-        const matrix = new THREE.Matrix4();
-        matrix.setPosition(vector);
-        return matrix;
+    function getMatrixFromVector(pos: THREE.Vector3, vel: THREE.Vector3): THREE.Matrix4 {
+
+        const translationMatrix = new THREE.Matrix4().setPosition(pos);
+        const angle = vel.angleTo(new THREE.Vector3(0,1,0))
+
+        // Combine the rotation and translation matrices to create the final transformation matrix
+        return new THREE.Matrix4().makeRotationZ(angle).copyPosition(translationMatrix);
     }
 
     function clipPosition(bird: Bird): void {
@@ -84,7 +87,7 @@ function BirdSim({
                     family: 0
                 }
 
-                const matrix = getMatrixFromVector(pos);
+                const matrix = getMatrixFromVector(bird.position, bird.velocity);
                 birdInstances.current.push(bird);
                 birdMeshRef.current.setMatrixAt(i, matrix);
                 birdMeshRef.current.setColorAt(i, new THREE.Color('red'));
@@ -160,7 +163,7 @@ function BirdSim({
 
                 clipPosition(bird);
 
-                birdMeshRef.current.setMatrixAt(i, getMatrixFromVector(bird.position));
+                birdMeshRef.current.setMatrixAt(i, getMatrixFromVector(bird.position, bird.velocity));
             }
 
 
@@ -184,7 +187,7 @@ function BirdSim({
                         family: 0
                     }
 
-                    const matrix = getMatrixFromVector(pos);
+                    const matrix = getMatrixFromVector(bird.position, bird.velocity);
                     birdInstances.current.push(bird);
                     birdMeshRef.current.setMatrixAt(i, matrix);
                 }
