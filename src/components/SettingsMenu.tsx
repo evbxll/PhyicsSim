@@ -88,10 +88,10 @@ const SettingsMenu: React.FC<{
       },
       {
         name: 'Birds Count',
-        min: 1,
+        min: 2,
         max: 1000,
         variable: birdsCount,
-        onChange: (value) => setBirdsCount(value)
+        onChange: (value) => setBirdsCount(Math.max(2, value))
       },
       {
         name: 'Bird Velocity',
@@ -108,7 +108,7 @@ const SettingsMenu: React.FC<{
         min: 0,
         max: Math.max(maxWidth / 2, maxHeight / 2),
         variable: boidRatios.replusionDistance,
-        onChange: (value) => updateBoidRule({replusionDistance: value})
+        onChange: (value) => updateBoidRule({ replusionDistance: value })
       },
       {
         name: 'Alignment: Max DIST',
@@ -128,16 +128,16 @@ const SettingsMenu: React.FC<{
         name: 'Replusion: Relative STRENGTH',
         min: 0,
         max: boidStrengthMax,
-        multiplier: 10/boidStrengthMax,
+        multiplier: 10 / boidStrengthMax,
         stepSize: 0.1,
         variable: boidRatios.replusionStrength,
-        onChange: (value) => updateBoidRule({replusionStrength: value})
+        onChange: (value) => updateBoidRule({ replusionStrength: value })
       },
       {
         name: 'Alignment: Relative STRENGTH',
         min: 0,
         max: boidStrengthMax,
-        multiplier: 10/boidStrengthMax,
+        multiplier: 10 / boidStrengthMax,
         stepSize: 0.1,
         variable: boidRatios.alignmentStrength,
         onChange: (value) => updateBoidRule({ alignmentStrength: value })
@@ -146,7 +146,7 @@ const SettingsMenu: React.FC<{
         name: 'Attraction: Relative STRENGTH',
         min: 0,
         max: boidStrengthMax,
-        multiplier: 10/boidStrengthMax,
+        multiplier: 10 / boidStrengthMax,
         stepSize: 0.1,
         variable: boidRatios.attractionStrength,
         onChange: (value) => updateBoidRule({ attractionStrength: value })
@@ -166,7 +166,7 @@ const SettingsMenu: React.FC<{
         )}
         {showSettingsMenu && (
           <Draggable handle=".drag-handle" bounds="parent">
-            <div className="absolute top-10 right-10 bg-gray-200 bg-opacity-80 p-4 padding-top-0 rounded-md shadow-md font-sans">
+            <div className="absolute top-10 right-10 max-h-[80vh] bg-gray-200 flex-vertical autoflow-auto overflow-y-auto bg-opacity-80 p-4 padding-top-0 rounded-md shadow-md font-sans">
               <div className="drag-handle w-full h-12 flex justify-center cursor-move">
                 <i className="fa fa-arrows text-3xl" />
               </div>
@@ -178,17 +178,18 @@ const SettingsMenu: React.FC<{
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
-              <h2 className="text-lg font-semibold mb-2">Settings Menu</h2>
-              <h2 className="text-lg font-semibold mb-2">FPS : {fps}</h2>
-              {sliders.map((sliderInfo, index) => (
-                <Slider
-                  key={index}
-                  SliderInfo={sliderInfo}
-                />
-              ))}
-              <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-2 rounded-md mb-1 ml-1 mr-1 " onClick={recenterCamera}>Recenter / Zoom Out</button>
-              <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-2 rounded-md mb-1 ml-1 mr-1" onClick={expandBoundsToWindow}>Expand Bounds</button>
-
+              <div className="flex-vertical autoflow-auto overflow-y-auto max-h-20vh">
+                <h2 className="text-lg font-semibold mb-2">Settings Menu</h2>
+                <h2 className="text-lg font-semibold mb-2">FPS : {fps.toFixed(3)}</h2>
+                {sliders.map((sliderInfo, index) => (
+                  <Slider
+                    key={index}
+                    SliderInfo={sliderInfo}
+                  />
+                ))}
+                <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-2 rounded-md mb-1 ml-1 mr-1 " onClick={recenterCamera}>Recenter / Zoom Out</button>
+                <button className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-2 rounded-md mb-1 ml-1 mr-1" onClick={expandBoundsToWindow}>ReExpand Bounds</button>
+              </div>
             </div>
           </Draggable >
         )}

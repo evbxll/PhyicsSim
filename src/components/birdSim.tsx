@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo, useRef } from 'react';
 import { useFrame, useThree } from "@react-three/fiber";
-import { MapControls, OrthographicCamera, PerspectiveCamera, Box } from "@react-three/drei";
+import { MapControls, OrthographicCamera, PerspectiveCamera, Box, OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 import createBirdGeometry from './birdGeometry';
 
@@ -50,10 +50,10 @@ function BirdSim({
     const birdInstances = useRef<Bird[]>([]);
     const birdMeshRef = useRef<THREE.InstancedMesh>(null);
 
-    const geomtery = useMemo(() => {return createBirdGeometry(birdSize)}, [birdSize]);
-    const material = useMemo(() => {return new THREE.MeshBasicMaterial({ color: 0xff0000 });}, []);
+    const geomtery = useMemo(() => { return createBirdGeometry(birdSize) }, [birdSize]);
+    const material = useMemo(() => { return new THREE.MeshBasicMaterial({ color: 0xff0000 }); }, []);
 
-    const velocityScalar = () => {return 20 * birdVelocity / fps};
+    const velocityScalar = () => { return 20 * birdVelocity / fps };
 
 
 
@@ -68,7 +68,7 @@ function BirdSim({
     function clipPosition(bird: Bird): void {
         const { position, velocity } = bird;
 
-        if(!clipTeleport){
+        if (!clipTeleport) {
 
             // Clip position if it's out of bounds
             if (Math.abs(position.x) >= boundsRef.current.boundX - birdSize) {
@@ -85,7 +85,7 @@ function BirdSim({
             }
         }
 
-        else{
+        else {
             // Teleport position if it's out of bounds
             if (Math.abs(position.x) >= boundsRef.current.boundX - birdSize) {
                 position.x = position.x < 0 ? boundsRef.current.boundX - birdSize : -boundsRef.current.boundX + birdSize;
@@ -121,6 +121,7 @@ function BirdSim({
 
 
                 if (isNaN(bird.position.x) || isNaN(bird.position.y) || isNaN(bird.position.z)) {
+                    console.log(i, bird, birdsCountRef.current, birdInstances.current.length)
                     throw new Error('RIP')
                 }
 
@@ -177,6 +178,12 @@ function BirdSim({
     useEffect(() => {
         if (birdMeshRef.current) {
             const prevLength = birdInstances.current.length;
+            if(prevLength >= birdsCountRef.current){
+                birdInstances.current = birdInstances.current.slice(0,birdsCountRef.current);
+                updateBirds();
+                return;
+            }
+
             for (let i = 0; i < birdsCountRef.current; i++) {
                 if (i >= prevLength) {
                     const pos = new THREE.Vector3(Math.random(), Math.random(), 0);
@@ -189,12 +196,12 @@ function BirdSim({
                     const matrix = getMatrixFromVector(bird.position, bird.velocity);
                     birdInstances.current.push(bird);
                     birdMeshRef.current.setMatrixAt(i, matrix);
-                }
+                }   
                 birdMeshRef.current.setColorAt(i, new THREE.Color('red'));
             }
+            
             birdMeshRef.current.instanceMatrix.needsUpdate = true;
         }
-        updateBirds();
 
     }, [birdsCountRef.current])
 
@@ -216,10 +223,9 @@ function BirdSim({
     })
 
     function countframes() {
+        const ratio = 0.6
         // console.log(framecounter)
-        const ratio = 0.9
-        console.log(fps, framecounter)
-        setFps(ratio*fps + (1-ratio)*(2*framecounter));
+        setFps(ratio * fps + (1 - ratio) * (2 * framecounter));
         framecounter = 0
     }
     useEffect(() => {
@@ -231,20 +237,38 @@ function BirdSim({
 
     return (
         <>
-            <OrthographicCamera
+            <PerspectiveCamera
                 makeDefault
                 ref={cameraRef}
-                position={[0, 0, 100]}
+                position={[0, 0, 825]}
             />
-            <MapControls
+            <OrbitControls
+
+                ref={controlsRef}
+                camera={cameraRef.current}
+
+                position0={new THREE.Vector3(0,0,825)}
+                zoom0={1}
+
+                enableDamping={false}
+                dampingFactor={0.05}
+
+
+                enablePan={true}
                 enableRotate={false}
+                enableZoom={true}
+
+                minDistance={70}
+                maxDistance={825}
+
+                panSpeed={1}
+                
                 zoomToCursor={true}
                 zoomSpeed={1}
-                enableDamping={true}
+
                 screenSpacePanning={true}
-                ref={controlsRef}
-                minZoom={1}
-                maxZoom={50}
+                // minZoom={1}
+                // maxZoom={50}
             />
             <instancedMesh
                 ref={birdMeshRef}

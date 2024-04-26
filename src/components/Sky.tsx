@@ -5,6 +5,7 @@ import { useRef, useEffect, useState, useMemo, useCallback } from "react";
 import BoundsBox from './BoundsBox';
 import SettingsMenu from './SettingsMenu';
 import { BoidRule } from "@/components/birdSim";
+import Scale from "./Scale";
 
 export interface Bounds {
   boundX: number,
@@ -33,14 +34,14 @@ const [showSettingsMenu, setShowSettingsMenu] = useState(true);
 const [bounds, setBounds] = useState<Bounds>({
   boundX: 300,
   boundY: 300,
-  boundZ: 50
+  boundZ: 1
 });
 const boundsRef = useRef<Bounds | null>(null)
 
 const [fps, setFps] = useState<number>(30);
-const [birdSize, setBirdSize] = useState<number>(3);
+const [birdSize, setBirdSize] = useState<number>(6);
 const [birdsCount, setBirdsCount] = useState(100);
-const [birdVelocity, setBirdVelocity] = useState(2);
+const [birdVelocity, setBirdVelocity] = useState(4);
 
 const updateBounds = (x?: number, y?: number, z?: number): void => {
 
@@ -55,12 +56,8 @@ const updateBounds = (x?: number, y?: number, z?: number): void => {
 };
 
 useEffect(() => {
-  const rect = canvasRef.current?.parentElement?.getBoundingClientRect();
-  if (!rect) return
-  const startWidth = rect.width / 3 - 5;
-  const startHeight = rect.height / 3 - 5;
-  updateBounds(startWidth, startHeight);
-}, [])
+  expandBoundsToWindow();
+}, [canvasRef.current, cameraRef.current])
 
 useEffect(() => {
   boundsRef.current = bounds;
@@ -76,24 +73,16 @@ useEffect(() => {
 
 
 const recenterCamera = () => {
-  cameraRef.current.position.set(0, 0, 100);
-  cameraRef.current.zoom = 1;
-  controlsRef.current.target.copy(new THREE.Vector3(0, 0, 100))
-  controlsRef.current.update();
-  cameraRef.current.updateProjectionMatrix();
+  controlsRef.current.reset();
 }
 
 const expandBoundsToWindow = () => {
   const rect = canvasRef.current?.parentElement?.getBoundingClientRect();
   if (!rect) return
-
-  console.log('exp')
-  cameraRef.current.position.set(0, 0, 100);
-  controlsRef.current.target.copy(new THREE.Vector3(0, 0, 100))
-  controlsRef.current.update();
-  cameraRef.current.updateProjectionMatrix(); 
-  const maxWidth = rect.width / 2 - 5;
-  const maxHeight = rect.height / 2 - 5;
+  if(!controlsRef.current) return
+ 
+  const maxWidth = rect.width / 2 - 2;
+  const maxHeight = rect.height / 2 - 2;
   updateBounds(maxWidth, maxHeight);
 }
 
@@ -115,6 +104,7 @@ return (
         birdSize={birdSize}
       />
       <BoundsBox bounds={bounds} />
+      <Scale unitLength={100} cameraRef={cameraRef}/>
       <color attach="background" args={['black']} />
     </Canvas>
     <SettingsMenu

@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
 import { Bounds } from './Sky';
 
@@ -9,7 +9,7 @@ function BoundsBox({ bounds }: BoundsBoxProps) {
   const linesRef = useRef<Array<THREE.Line>>([]);
   const lineGroup = useRef<THREE.Group>(null);
 
-  useEffect(() => {
+  useMemo(() => {
     // Clear existing lines
     linesRef.current.forEach((line) => {
       if (lineGroup.current) lineGroup.current.remove(line);
@@ -40,4 +40,4 @@ function BoundsBox({ bounds }: BoundsBoxProps) {
   return <group ref={lineGroup} />;
 }
 
-export default BoundsBox;
+export default React.memo(BoundsBox);
