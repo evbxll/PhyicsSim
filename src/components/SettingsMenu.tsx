@@ -77,14 +77,6 @@ const SettingsMenu: React.FC<{
         multiplier: 2,
         onChange: (value) => updateBounds(undefined, value)
       },
-      {
-        name: 'Frames Per Second (FPS)',
-        min: 0.5,
-        max: 144,
-        stepSize: 0.5,
-        variable: fps,
-        onChange: (value) => setFps(value)
-      },
       //============================================================
       // The Bird Info
       {
@@ -187,6 +179,7 @@ const SettingsMenu: React.FC<{
                 </svg>
               </button>
               <h2 className="text-lg font-semibold mb-2">Settings Menu</h2>
+              <h2 className="text-lg font-semibold mb-2">FPS : {fps}</h2>
               {sliders.map((sliderInfo, index) => (
                 <Slider
                   key={index}

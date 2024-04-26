@@ -26,24 +26,26 @@ function BirdSim({
     cameraRef,
     controlsRef,
     boidRatiosRef,
+    birdsCountRef,
     fps = 30,
+    setFps,
     birdVelocity = 20,
     birdSize = 1,
-    birdsCount = 100,
 }: {
     boundsRef: any,
     cameraRef: any,
     controlsRef: any,
-    boidRatiosRef: any;
+    boidRatiosRef: any,
+    birdsCountRef: any,
     fps: number,
+    setFps: (value: number) => void,
     birdVelocity: number,
     birdSize: number,
-    birdsCount: number,
 }) {
 
     let framecounter = 0;
 
-    const clipTeleport = true;
+    const clipTeleport = false;
 
     const birdInstances = useRef<Bird[]>([]);
     const birdMeshRef = useRef<THREE.InstancedMesh>(null);
@@ -51,13 +53,7 @@ function BirdSim({
     const geomtery = useMemo(() => {return createBirdGeometry(birdSize)}, [birdSize]);
     const material = useMemo(() => {return new THREE.MeshBasicMaterial({ color: 0xff0000 });}, []);
 
-    const velocityScalarRef = useRef(20 * birdVelocity / fps)
-
-    useMemo(() => {
-        const newVelocityScalar = 20 * birdVelocity / fps;
-        velocityScalarRef.current = newVelocityScalar;
-        console.log(birdVelocity, fps, newVelocityScalar)
-    }, [fps, birdVelocity])
+    const velocityScalar = () => {return 20 * birdVelocity / fps};
 
 
 
@@ -104,12 +100,13 @@ function BirdSim({
     }
 
     const updateBirds = () => {
-        framecounter += 1;
-
         const skipChance = 0.8
 
+        const birdsCount = Math.min(birdsCountRef.current, birdInstances.current.length);
+
         if (birdMeshRef.current) {
-            for (const [i, bird] of birdInstances.current.entries()) {
+            for (let i = 0; i < birdsCount; i++) {
+                const bird = birdInstances.current[i];
                 let replusion = new THREE.Vector3();
                 let alignment = new THREE.Vector3();
                 let attraction = new THREE.Vector3();
@@ -127,8 +124,9 @@ function BirdSim({
                     throw new Error('RIP')
                 }
 
-                for (const [j, neighbor] of birdInstances.current.entries()) {
+                for (let j = 0; j < birdsCount; j++) {
                     if (i === j || Math.random() < skipChance) continue;
+                    const neighbor = birdInstances.current[j];
 
                     const vectorToNeighbor = neighbor.position.clone().sub(bird.position);
                     const distanceLength = vectorToNeighbor.length();
@@ -159,7 +157,7 @@ function BirdSim({
 
                 // console.log(attraction, boidRatiosRef.current.replusionStrength)
                 // Update velocity based on rules
-                bird.velocity.add(replusion).add(alignment).add(attraction).normalize().multiplyScalar(velocityScalarRef.current);
+                bird.velocity.add(replusion).add(alignment).add(attraction).normalize().multiplyScalar(velocityScalar());
                 bird.position.add(bird.velocity);
 
                 clipPosition(bird);
@@ -173,17 +171,18 @@ function BirdSim({
             // console.log(birdInstances.current[0])
         }
         // console.log('f', birdInstances.current[0].velocity)
+        framecounter += 1;
     }
 
     useEffect(() => {
         if (birdMeshRef.current) {
             const prevLength = birdInstances.current.length;
-            for (let i = 0; i < birdsCount; i++) {
+            for (let i = 0; i < birdsCountRef.current; i++) {
                 if (i >= prevLength) {
                     const pos = new THREE.Vector3(Math.random(), Math.random(), 0);
                     const bird: Bird = {
                         position: pos,
-                        velocity: new THREE.Vector3(Math.random(), Math.random(), 0).normalize().multiplyScalar(velocityScalarRef.current),
+                        velocity: new THREE.Vector3(Math.random(), Math.random(), 0).normalize().multiplyScalar(velocityScalar()),
                         family: 0
                     }
 
@@ -197,7 +196,7 @@ function BirdSim({
         }
         updateBirds();
 
-    }, [birdsCount])
+    }, [birdsCountRef.current])
 
 
     // useFrame(() => {
@@ -206,19 +205,28 @@ function BirdSim({
     //     // console.log('fr')
     // })
 
-    useEffect(() => {
-        const intervalId = setInterval(updateBirds, 1000 / fps);
-        // updateBirds();
-        return () => clearInterval(intervalId); // Cleanup function to clear the interval when the component unmounts or the dependency array changes
-    }, [fps]);
+    // useEffect(() => {
+    //     const intervalId = setInterval(updateBirds, 1000 / fps);
+    //     // updateBirds();
+    //     return () => clearInterval(intervalId); // Cleanup function to clear the interval when the component unmounts or the dependency array changes
+    // }, [fps]);
+
+    useFrame(() => {
+        updateBirds();
+    })
 
     function countframes() {
         // console.log(framecounter)
+        const ratio = 0.9
+        console.log(fps, framecounter)
+        setFps(ratio*fps + (1-ratio)*(2*framecounter));
         framecounter = 0
     }
     useEffect(() => {
-        const intervalId = setInterval(countframes, 1000);
-        return () => clearInterval(intervalId); // Cleanup function to clear the interval when the component unmounts or the dependency array changes
+        framecounter = 0
+        setTimeout(() => {
+            countframes();
+        }, 500);
     }, [fps]);
 
     return (
@@ -240,7 +248,7 @@ function BirdSim({
             />
             <instancedMesh
                 ref={birdMeshRef}
-                args={[geomtery, material, birdsCount]}
+                args={[geomtery, material, birdsCountRef.current]}
                 frustumCulled={false}
             />
 

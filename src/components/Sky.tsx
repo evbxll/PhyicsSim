@@ -17,15 +17,16 @@ const Sky = () => {
   const cameraRef = useRef<any>(null)
   const controlsRef = useRef<any>(null);
   const boidRatiosRef = useRef<any>(null);
+  const birdsCountRef = useRef<number>(0);
 
 
   const [boidRatios, setBoidRatios] = useState<BoidRule>({
     replusionDistance: 100,
-    replusionStrength: 0.001,
+    replusionStrength: 0.1,
     alignmentDistance: 100,
-    alignmentStrength: 0.001,
+    alignmentStrength: 0.1,
     attractionDistance: 100,
-    attractionStrength: 0.001,
+    attractionStrength: 0.1,
   });
 
 const [showSettingsMenu, setShowSettingsMenu] = useState(true);
@@ -69,6 +70,10 @@ useEffect(() => {
   boidRatiosRef.current = boidRatios;
 }, [boidRatios])
 
+useEffect(() => {
+  birdsCountRef.current = birdsCount;
+}, [birdsCount])
+
 
 const recenterCamera = () => {
   cameraRef.current.position.set(0, 0, 100);
@@ -103,10 +108,11 @@ return (
         cameraRef={cameraRef}
         controlsRef={controlsRef}
         boidRatiosRef={boidRatiosRef}
+        birdsCountRef={birdsCountRef}
         fps={fps}
+        setFps={setFps}
         birdVelocity={birdVelocity}
         birdSize={birdSize}
-        birdsCount={birdsCount}
       />
       <BoundsBox bounds={bounds} />
       <color attach="background" args={['black']} />
