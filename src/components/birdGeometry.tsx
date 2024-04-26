@@ -8,7 +8,7 @@ function createBirdGeometry(birdSize: number) {
   const birdShape = new THREE.Shape();
 
   const d = 0.2;
-  const tailX = 0.4
+  const tailX = 0.3
 
   // Define the silhouette of the bird
   birdShape.moveTo(0, 1-d);          // Tail start
@@ -16,7 +16,7 @@ function createBirdGeometry(birdSize: number) {
   birdShape.quadraticCurveTo(0, 0.3-d, tailX, -0.5-d);  // Curve
   birdShape.lineTo(0, 1-d);  
 
-  return new THREE.ShapeGeometry(birdShape).scale(birdSize, birdSize, birdSize);
+  return new THREE.ShapeGeometry().scale(birdSize, birdSize, birdSize);
 }
 
 export default createBirdGeometry;

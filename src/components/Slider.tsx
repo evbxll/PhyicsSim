@@ -46,13 +46,17 @@ const Slider : React.FC<{SliderInfo: SliderType}> = ({SliderInfo}) => {
     onChange(value);
   };
 
+  const trunc = (v: number) => {
+    return Math.ceil(v*10000)/10000
+  }
+
   return (
     <div className="mb-2">
-      <label className="block text-sm mb-1">{name}: <span className="text-gray-500 ml-2">{variable * (multiplier ?? 1)}</span></label>
+      <label className="block text-sm mb-1">{name}: <span className="text-gray-500 ml-2">{trunc(variable * (multiplier ?? 1))}</span></label>
       <input
         type="range"
         min={min}
-        step={stepSize ?? 1}
+        step={(stepSize ?? 1)/(multiplier ?? 1)}
         max={max}
         value={variable}
         onChange={handleChange}

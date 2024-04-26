@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import Draggable from 'react-draggable';
 import { Bounds } from './Sky';
 import Slider, { SliderType } from './Slider';
+import { BoidRule } from './birdSim';
 
 
 
@@ -22,6 +23,8 @@ const SettingsMenu: React.FC<{
   setBirdVelocity: (variable: number) => void;
   recenterCamera: () => void;
   expandBoundsToWindow: () => void;
+  boidRatios: BoidRule;
+  setBoidRatios: (value: BoidRule) => void;
 }> = ({
   canvasRef,
   updateBounds,
@@ -37,7 +40,9 @@ const SettingsMenu: React.FC<{
   birdVelocity,
   setBirdVelocity,
   recenterCamera,
-  expandBoundsToWindow
+  expandBoundsToWindow,
+  boidRatios,
+  setBoidRatios,
 }) => {
 
     let maxWidth = 1000;
@@ -47,6 +52,13 @@ const SettingsMenu: React.FC<{
       maxWidth = rect.width;
       maxHeight = rect.height;
     }
+
+    const boidStrengthMax = 0.5;
+
+    const updateBoidRule = (value: Partial<BoidRule>): void => {
+      const updatedBoidRatios = { ...boidRatios, ...value };
+      setBoidRatios(updatedBoidRatios);
+    };
 
     const sliders: SliderType[] = [
       {
@@ -73,6 +85,8 @@ const SettingsMenu: React.FC<{
         variable: fps,
         onChange: (value) => setFps(value)
       },
+      //============================================================
+      // The Bird Info
       {
         name: 'Bird Size',
         min: 1,
@@ -94,7 +108,57 @@ const SettingsMenu: React.FC<{
         stepSize: 0.1,
         variable: birdVelocity,
         onChange: (value) => setBirdVelocity(value)
-      }
+      },
+      //============================================================
+      // The BoidRules
+      {
+        name: 'Replusion: Max DIST',
+        min: 0,
+        max: Math.max(maxWidth / 2, maxHeight / 2),
+        variable: boidRatios.replusionDistance,
+        onChange: (value) => updateBoidRule({replusionDistance: value})
+      },
+      {
+        name: 'Alignment: Max DIST',
+        min: 0,
+        max: Math.max(maxWidth / 2, maxHeight / 2),
+        variable: boidRatios.alignmentDistance,
+        onChange: (value) => updateBoidRule({ alignmentDistance: value })
+      },
+      {
+        name: 'Attraction: Max DIST',
+        min: 0,
+        max: Math.max(maxWidth / 2, maxHeight / 2),
+        variable: boidRatios.attractionDistance,
+        onChange: (value) => updateBoidRule({ attractionDistance: value })
+      },
+      {
+        name: 'Replusion: Relative STRENGTH',
+        min: 0,
+        max: boidStrengthMax,
+        multiplier: 10/boidStrengthMax,
+        stepSize: 0.1,
+        variable: boidRatios.replusionStrength,
+        onChange: (value) => updateBoidRule({replusionStrength: value})
+      },
+      {
+        name: 'Alignment: Relative STRENGTH',
+        min: 0,
+        max: boidStrengthMax,
+        multiplier: 10/boidStrengthMax,
+        stepSize: 0.1,
+        variable: boidRatios.alignmentStrength,
+        onChange: (value) => updateBoidRule({ alignmentStrength: value })
+      },
+      {
+        name: 'Attraction: Relative STRENGTH',
+        min: 0,
+        max: boidStrengthMax,
+        multiplier: 10/boidStrengthMax,
+        stepSize: 0.1,
+        variable: boidRatios.attractionStrength,
+        onChange: (value) => updateBoidRule({ attractionStrength: value })
+      },
     ];
 
 
