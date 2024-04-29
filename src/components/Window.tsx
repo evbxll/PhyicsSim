@@ -99,7 +99,7 @@ const Window = () => {
     const c = ballsCount;
     setBallsCount(0);
     await new Promise(resolve => { setTimeout(resolve, 500); })
-    setBallsCount(Math.max(100, c))
+    setBallsCount(Math.max(2, c))
   }
 
   return (

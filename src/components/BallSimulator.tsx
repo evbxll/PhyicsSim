@@ -61,14 +61,17 @@ const BallSim: React.FC<{
                     position.y = THREE.MathUtils.clamp(position.y, -boundY, boundY);
                     velocity.y *= -groundBouncinessFactor;
                 }
+                else if (position.y > -boundY + 0.05){
+                    velocity.add(new THREE.Vector3(0, -gravity, 0))
+                }
 
                 if (!clipTeleportRef.current) {
                     if (Math.abs(position.x) >= boundX) {
-                        position.x = THREE.MathUtils.clamp(position.x, -boundX + 1, boundX - 1);
+                        position.x = THREE.MathUtils.clamp(position.x, -boundX, boundX);
                         velocity.x *= -1;
                     }
                     if (position.y >= boundY) {
-                        position.y = boundY - 1;
+                        position.y = boundY;
                         velocity.y *= -1;
                     }
                 } else {
@@ -81,7 +84,7 @@ const BallSim: React.FC<{
                     }
                 }
             };
-        }, [ballSize])
+        }, [ballSize, gravity])
 
         const updateBalls = () => {
             if (!ballMeshRef.current) return
@@ -115,16 +118,15 @@ const BallSim: React.FC<{
                     const distanceLength = vectorToNeighbor.length();
 
                     if (distanceLength <= 2 * ballSize) {
-                        const similarity = neighbor.velocity.clone().cross(vectorToNeighbor.clone().normalize()).length()
-                        const velRatio = (neighbor.velocity.length() + 0.0001) / (ball.velocity.length() + 0.00001) * similarity
-                        vectorToNeighbor.multiplyScalar(velRatio)
+                        const similarity = Math.abs(1 - neighbor.velocity.clone().cross(vectorToNeighbor.clone()).length())
+                        // const velRatio = (neighbor.velocity.length() + 0.01) / (ball.velocity.length() + neighbor.velocity.length() + 0.01)*similarity
+                        vectorToNeighbor.multiplyScalar(similarity*0.5)
                         newBallVelocity.sub(vectorToNeighbor)
                         collisions += 1;
                     }
                 }
 
                 newBallVelocity.divideScalar(1 + collisions).multiplyScalar((collisions) ? collisionBouncinessFactor : 1)
-                newBallVelocity.add(new THREE.Vector3(0, -gravity, 0))
                 newBallVelocities[i] = newBallVelocity;
 
             }
@@ -133,8 +135,8 @@ const BallSim: React.FC<{
             for (let i = 0; i < ballsCount; i++) {
                 const newVelocity = newBallVelocities[i].clone();
                 const ball = ballInstances.current[i];
-                ball.velocity = newVelocity.clampLength(0, maxVelocityRef.current);
-                ball.position.add(ball.velocity.clone());
+                ball.velocity = newVelocity.clampLength(0, 50)
+                ball.position.add(ball.velocity.clone().clampLength(0, maxVelocityRef.current));
                 clipPosition(ball.position, ball.velocity, groundBounciness);
                 ballMeshRef.current.setMatrixAt(i, getMatrixFromVector(ball.position, ball.velocity));
                 ballMeshRef.current.setColorAt(i, ball.color);
