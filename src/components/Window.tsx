@@ -1,4 +1,3 @@
-import ballsim from "@/components/BallSimulator";
 import { Canvas } from "@react-three/fiber";
 import * as THREE from "three";
 import { useRef, useEffect, useState, useMemo, useCallback } from "react";
@@ -13,7 +12,7 @@ export interface Bounds {
   boundZ: number,
 }
 
-const Sky = () => {
+const Window = () => {
   const canvasRef = useRef<any>(null)
   const cameraRef = useRef<any>(null)
   const controlsRef = useRef<any>(null);
@@ -145,4 +144,4 @@ const Sky = () => {
   );
 }
 
-export default Sky;
+export default Window;

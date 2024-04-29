@@ -1,9 +1,9 @@
-import Sky from '@/components/Window';
+import Window from '@/components/Window';
 import React from 'react';
 
 const HomePage = () => {
   return (
-    <Sky />
+    <Window />
   );
 }
 

@@ -30,7 +30,7 @@
         "./node_modules/@react-three/fiber"
       ]
     },
-    "moduleResolution": "nodenext"
+    "moduleResolution": "NodeNext"
   },
   "include": [
     "next-env.d.ts",
