@@ -57,36 +57,36 @@ const BallSim: React.FC<{
                 const boundX = boundsRef.current.boundX - ballSize;
                 const boundY = boundsRef.current.boundY - ballSize;
 
-                if (position.y <= -boundY) {
+                const smallDiff = 0.01
+
+                if (position.y < -boundY) {
                     position.y = THREE.MathUtils.clamp(position.y, -boundY, boundY);
                     velocity.y *= -groundBouncinessFactor;
-                }
-                else if (position.y > -boundY + 0.05){
-                    velocity.add(new THREE.Vector3(0, -gravity, 0))
                 }
 
                 if (!clipTeleportRef.current) {
                     if (Math.abs(position.x) >= boundX) {
-                        position.x = THREE.MathUtils.clamp(position.x, -boundX, boundX);
+                        position.x = THREE.MathUtils.clamp(position.x, -boundX+smallDiff, boundX-smallDiff);
                         velocity.x *= -1;
                     }
                     if (position.y >= boundY) {
-                        position.y = boundY;
+                        position.y = boundY-smallDiff;
                         velocity.y *= -1;
                     }
                 } else {
                     console.log(position, boundX, boundY)
                     if (Math.abs(position.x) >= boundX) {
-                        position.x = (position.x < 0) ? boundX - 1 : -boundX + 1;
+                        position.x = (position.x < 0) ? boundX - smallDiff : -boundX + smallDiff;
                     }
                     if (position.y >= boundY) {
-                        position.y = -boundY + ballSize;
+                        position.y = -boundY + ballSize + smallDiff;
                     }
                 }
             };
         }, [ballSize, gravity])
 
-        const updateBalls = () => {
+        const updateBalls = useMemo(() => {
+            return () => {
             if (!ballMeshRef.current) return
 
             const skipChance = 0
@@ -114,19 +114,20 @@ const BallSim: React.FC<{
                     if (i === j || Math.random() < skipChance) continue;
                     const neighbor = ballInstances.current[j];
 
+                    //me to neighbor
                     const vectorToNeighbor = neighbor.position.clone().sub(ball.position);
                     const distanceLength = vectorToNeighbor.length();
 
                     if (distanceLength <= 2 * ballSize) {
-                        const similarity = Math.abs(1 - neighbor.velocity.clone().cross(vectorToNeighbor.clone()).length())
-                        // const velRatio = (neighbor.velocity.length() + 0.01) / (ball.velocity.length() + neighbor.velocity.length() + 0.01)*similarity
-                        vectorToNeighbor.multiplyScalar(similarity*0.5)
-                        newBallVelocity.sub(vectorToNeighbor)
+
+                        const forceValue = Math.abs(neighbor.velocity.clone().sub(ball.velocity.clone()).dot(vectorToNeighbor.clone().normalize()))
+                        newBallVelocity.sub(vectorToNeighbor.clone().normalize().multiplyScalar(forceValue))
+
                         collisions += 1;
                     }
                 }
 
-                newBallVelocity.divideScalar(1 + collisions).multiplyScalar((collisions) ? collisionBouncinessFactor : 1)
+                newBallVelocity.multiplyScalar((collisions > 0) ? collisionBouncinessFactor : 1)
                 newBallVelocities[i] = newBallVelocity;
 
             }
@@ -135,8 +136,10 @@ const BallSim: React.FC<{
             for (let i = 0; i < ballsCount; i++) {
                 const newVelocity = newBallVelocities[i].clone();
                 const ball = ballInstances.current[i];
-                ball.velocity = newVelocity.clampLength(0, 50)
+                ball.velocity = newVelocity.clampLength(0, 500)
+                ball.velocity.add(new THREE.Vector3(0, -gravity, 0))
                 ball.position.add(ball.velocity.clone().clampLength(0, maxVelocityRef.current));
+
                 clipPosition(ball.position, ball.velocity, groundBounciness);
                 ballMeshRef.current.setMatrixAt(i, getMatrixFromVector(ball.position, ball.velocity));
                 ballMeshRef.current.setColorAt(i, ball.color);
@@ -145,7 +148,7 @@ const BallSim: React.FC<{
             //Very important this stays this way, doesnt update otherwise
             ballMeshRef.current.instanceMatrix.needsUpdate = true;
             framecounter += 1;
-        }
+        }},[ballSize, ballsCount, gravity, groundBouncinessRef.current, collisionBouncinessFactorRef.current])
 
         useEffect(() => {
             if (!ballMeshRef.current) return

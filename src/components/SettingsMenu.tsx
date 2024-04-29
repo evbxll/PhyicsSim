@@ -102,9 +102,9 @@ const SettingsMenu: React.FC<{
       {
         name: 'Gravity',
         min: 0,
-        max: 0.5,
+        max: 30,
         stepSize: 0.01,
-        multiplier: 2,
+        multiplier: 1,
         variable: gravityStateHook[0],
         onChange: gravityStateHook[1]
       }
