@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useMemo } from 'react';
 import * as THREE from 'three';
-import { Bounds } from './Sky';
+import { Bounds } from './Window';
 
 interface BoundsBoxProps {
   bounds: Bounds;

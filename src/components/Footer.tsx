@@ -8,7 +8,7 @@ const Footer = () => {
       <div className="container mx-auto flex justify-between items-end px-6">
         <div className="flex items-center justify-center space-x-6">
           <a
-            href={`https://github.com/evbxll/BirdBoidSim`}
+            href={`https://github.com/evbxll/PhysicsSim`}
             target='_blank'
             rel="noopener noreferrer"
             className="text-white hover:text-gray-300 transition-colors duration-300 flex items-center"

@@ -1,4 +1,4 @@
-import Sky from '@/components/Sky';
+import Sky from '@/components/Window';
 import React from 'react';
 
 const HomePage = () => {
