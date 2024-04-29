@@ -116,12 +116,12 @@ const SettingsMenu: React.FC<{
         {!showSettingsStateHook[0] && (
           <button
             className="fixed top-4 right-4 px-6 py-3 bg-blue-500 text-white font-semibold rounded-md shadow-md transition duration-300 hover:bg-blue-600"
-            onClick={() => fpsStateHook[1](true)}
+            onClick={() => showSettingsStateHook[1](true)}
           >
             Show Settings
           </button>
         )}
-        {showSettingsStateHook[0] && (
+        {showSettingsStateHook[0] === true && (
           <Draggable handle=".drag-handle" bounds="parent">
             <div className="absolute top-10 right-10 max-h-[80vh] bg-gray-200 flex-vertical autoflow-auto overflow-y-auto bg-opacity-80 p-4 padding-top-0 rounded-md shadow-md font-sans">
               <div className="drag-handle w-full h-12 flex justify-center cursor-move">
@@ -129,7 +129,7 @@ const SettingsMenu: React.FC<{
               </div>
               <button
                 className="absolute top-2 right-2 text-gray-700 hover:text-gray-800"
-                onClick={() => fpsStateHook[1](false)}
+                onClick={() => showSettingsStateHook[1](false)}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />

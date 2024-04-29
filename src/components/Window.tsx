@@ -25,7 +25,7 @@ const Window = () => {
   const clipTeleportRef = useRef<boolean>(false);
 
 
-  const [showSettingsMenu, setShowSettingsMenu] = useState(true);
+  const [showSettingsMenu, setShowSettingsMenu] = useState<boolean>(true);
 
 
   const [bounds, setBounds] = useState<Bounds>({
