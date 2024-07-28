@@ -18,7 +18,7 @@ const BallSim: React.FC<{
     fps: number;
     groundBouncinessRef: React.MutableRefObject<number>;
     collisionBouncinessFactorRef: React.MutableRefObject<number>;
-    maxVelocityRef: React.MutableRefObject<number>;
+    initialVelocityRef: React.MutableRefObject<number>;
     clipTeleportRef: React.MutableRefObject<boolean>;
     gravity: number;
     setFps: React.Dispatch<React.SetStateAction<number>>;
@@ -31,7 +31,7 @@ const BallSim: React.FC<{
     fps,
     groundBouncinessRef,
     collisionBouncinessFactorRef,
-    maxVelocityRef,
+    initialVelocityRef,
     clipTeleportRef,
     gravity,
     setFps,
@@ -119,15 +119,14 @@ const BallSim: React.FC<{
                     const distanceLength = vectorToNeighbor.length();
 
                     if (distanceLength <= 2 * ballSize) {
-
-                        const forceValue = Math.abs(neighbor.velocity.clone().sub(ball.velocity.clone()).dot(vectorToNeighbor.clone().normalize()))
-                        newBallVelocity.sub(vectorToNeighbor.clone().normalize().multiplyScalar(forceValue))
-
+                        // const a = neighbor.velocity.clone().projectOnVector(vectorToNeighbor.clone().normalize());
+                        // const b = ball.velocity.clone().projectOnVector(vectorToNeighbor.clone().normalize());
+                        // const mult = Math.abs(a.sub(b).length());
+                        newBallVelocity.sub(vectorToNeighbor.clone().normalize()).multiplyScalar(collisionBouncinessFactor);
                         collisions += 1;
                     }
                 }
 
-                newBallVelocity.multiplyScalar((collisions > 0) ? collisionBouncinessFactor : 1)
                 newBallVelocities[i] = newBallVelocity;
 
             }
@@ -136,9 +135,9 @@ const BallSim: React.FC<{
             for (let i = 0; i < ballsCount; i++) {
                 const newVelocity = newBallVelocities[i].clone();
                 const ball = ballInstances.current[i];
-                ball.velocity = newVelocity.clampLength(0, 500)
+                ball.velocity = newVelocity
                 ball.velocity.add(new THREE.Vector3(0, -gravity, 0))
-                ball.position.add(ball.velocity.clone().clampLength(0, maxVelocityRef.current));
+                ball.position.add(ball.velocity.clone());
 
                 clipPosition(ball.position, ball.velocity, groundBounciness);
                 ballMeshRef.current.setMatrixAt(i, getMatrixFromVector(ball.position, ball.velocity));
@@ -153,7 +152,7 @@ const BallSim: React.FC<{
         useEffect(() => {
             if (!ballMeshRef.current) return
 
-            const initialVelocity = maxVelocityRef.current;
+            const initialVelocity = initialVelocityRef.current;
 
             const prevLength = ballInstances.current.length;
             if (prevLength >= ballsCount) {
@@ -228,7 +227,7 @@ const BallSim: React.FC<{
             setTimeout(() => {
                 countframes();
             }, 1000);
-        }, [fps]);
+        }, []);
 
         return (
             <>

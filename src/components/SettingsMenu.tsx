@@ -76,7 +76,7 @@ const SettingsMenu: React.FC<{
         onChange: ballsCountStateHook[1]
       },
       {
-        name: 'Max Ball Velocity',
+        name: 'Initial Ball Velocity',
         min: 0,
         max: 10,
         stepSize: 0.1,
@@ -102,7 +102,7 @@ const SettingsMenu: React.FC<{
       {
         name: 'Gravity',
         min: 0,
-        max: 30,
+        max: 4,
         stepSize: 0.01,
         multiplier: 1,
         variable: gravityStateHook[0],

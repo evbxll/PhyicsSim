@@ -21,7 +21,7 @@ const Window = () => {
   const ballsCountRef = useRef<number>(0);
   const groundBouncinessRef = useRef<number>(0.9);
   const collisionBouncinessRef = useRef<number>(0.4);
-  const maxVelocityRef = useRef<number>(3);
+  const initialVelocityRef = useRef<number>(3);
   const clipTeleportRef = useRef<boolean>(false);
 
 
@@ -76,7 +76,7 @@ const Window = () => {
   }, [collisionBounciness])
 
   useEffect(() => {
-    maxVelocityRef.current = ballVelocity;
+    initialVelocityRef.current = ballVelocity;
   }, [ballVelocity])
 
 
@@ -118,7 +118,7 @@ const Window = () => {
           gravity={gravity}
           groundBouncinessRef={groundBouncinessRef}
           collisionBouncinessFactorRef={collisionBouncinessRef}
-          maxVelocityRef={maxVelocityRef}
+          initialVelocityRef={initialVelocityRef}
           clipTeleportRef={clipTeleportRef}
           setFps={setFps}
         />
